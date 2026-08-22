@@ -18,6 +18,7 @@
       <a href="#services">Huduma</a>
       <a href="#gallery">Mifano</a>
       <a href="#pricing">Bei</a>
+      <a href="#order">Agiza Kadi</a>
       <a href="#contact">Wasiliana</a>
     </nav>
   </header>
@@ -114,6 +115,51 @@
       <a class="btn gold" href="https://wa.me/255621619351?text=Habari%20Geita%20Cards%2C%20nataka%20kuagiza%20kadi." target="_blank" rel="noopener">Tuma WhatsApp</a>
     </section>
 
+
+    <section id="order" class="section order-section">
+      <div class="section-heading">
+        <p class="eyebrow">AGIZA KADI</p>
+        <h2>Anza oda yako hapa</h2>
+        <p>Jaza taarifa za msingi. Baada ya kutuma, utaendelea WhatsApp ili tukamilishe oda yako.</p>
+      </div>
+      <form id="orderForm" class="order-form">
+        <div class="form-grid">
+          <label>Jina lako
+            <input name="customerName" required placeholder="Mfano: Amina Ismaili">
+          </label>
+          <label>Namba ya simu
+            <input name="phone" required type="tel" placeholder="+255...">
+          </label>
+          <label>Aina ya tukio
+            <select name="eventType" required>
+              <option value="">Chagua tukio</option>
+              <option>Harusi</option><option>Birthday</option>
+              <option>Sendoff</option><option>Baby Shower</option>
+              <option>Kitchen Party</option><option>Tukio lingine</option>
+            </select>
+          </label>
+          <label>Package
+            <select name="package" required>
+              <option value="">Chagua package</option>
+              <option>Basic — TSh 900</option>
+              <option>Premium — TSh 1,500</option>
+            </select>
+          </label>
+          <label>Tarehe ya tukio
+            <input name="eventDate" type="date">
+          </label>
+          <label>Idadi ya wageni
+            <input name="guestCount" type="number" min="1" placeholder="Mfano: 150">
+          </label>
+        </div>
+        <label>Maelezo ya ziada
+          <textarea name="notes" rows="4" placeholder="Majina, eneo, muda, rangi unazopenda, n.k."></textarea>
+        </label>
+        <button class="btn gold" type="submit">Tuma Oda WhatsApp</button>
+        <p class="form-note">Taarifa hizi zitatumwa kwenye WhatsApp ya Geita Cards.</p>
+      </form>
+    </section>
+
     <section id="contact" class="section contact">
       <div class="section-heading">
         <p class="eyebrow">WASILIANO</p>
@@ -137,6 +183,24 @@
       document.getElementById('nav').classList.remove('open');
     }));
     document.getElementById('year').textContent = new Date().getFullYear();
+
+    document.getElementById('orderForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const f = new FormData(this);
+      const msg = [
+        'Habari Geita Cards, nataka kuagiza kadi.',
+        '',
+        'Jina: ' + f.get('customerName'),
+        'Simu: ' + f.get('phone'),
+        'Tukio: ' + f.get('eventType'),
+        'Package: ' + f.get('package'),
+        'Tarehe: ' + (f.get('eventDate') || 'Haijawekwa'),
+        'Wageni: ' + (f.get('guestCount') || 'Haijawekwa'),
+        'Maelezo: ' + (f.get('notes') || 'Hakuna')
+      ].join('\n');
+      window.open('https://wa.me/255621619351?text=' + encodeURIComponent(msg), '_blank');
+    });
+
   </script>
 </body>
 </html>
