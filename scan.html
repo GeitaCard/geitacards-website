@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Geita Cards - QR Attendance</title>
+
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #080808;
+      color: white;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 500px;
+      text-align: center;
+    }
+
+    h1 {
+      color: #f5c542;
+      margin-bottom: 8px;
+    }
+
+    p {
+      color: #bbb;
+    }
+
+    #reader {
+      width: 100%;
+      margin: 25px auto;
+      border-radius: 15px;
+      overflow: hidden;
+    }
+
+    .result {
+      display: none;
+      margin-top: 20px;
+      padding: 20px;
+      border-radius: 15px;
+      background: #151515;
+    }
+
+    .success {
+      color: #45e06f;
+    }
+
+    .error {
+      color: #ff5757;
+    }
+
+    .name {
+      font-size: 24px;
+      font-weight: bold;
+      margin: 10px 0;
+    }
+
+    button {
+      background: #f5c542;
+      border: none;
+      padding: 13px 25px;
+      border-radius: 30px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+
+    <h1>Geita Cards</h1>
+
+    <p>Scan QR ya mgeni kuthibitisha mahudhurio</p>
+
+    <div id="reader"></div>
+
+    <div id="result" class="result"></div>
+
+  </div>
+
+<script>
+
+let scanning = true;
+
+async function checkAttendance(token) {
+
+  if (!scanning) return;
+
+  scanning = false;
+
+  const resultBox = document.getElementById("result");
+
+  resultBox.style.display = "block";
+  resultBox.innerHTML = "⏳ Inahakiki QR...";
+
+  try {
+
+    const response = await fetch("/api/check-in", {
+
+      method: "POST",
+
+      headers: {
+        "Content-Type": "application/json"
+      },
+
+      body: JSON.stringify({
+        token: token
+      })
+
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+
+      resultBox.innerHTML = `
+        <div class="success">
+          <h2>✅ AMEHUDHURIA</h2>
+
+          <div class="name">
+            ${data.guest.name}
+          </div>
+
+          <p>
+            Simu: ${data.guest.phone || "-"}
+          </p>
+
+          <p>
+            Event: ${data.guest.event || "-"}
+          </p>
+
+          <p>
+            Muda: ${new Date(data.guest.checkedInAt).toLocaleString("sw-TZ")}
+          </p>
+        </div>
+
+        <br>
+
+        <button onclick="scanAgain()">
+          Scan Mgeni Mwingine
+        </button>
+      `;
+
+    } else {
+
+      resultBox.innerHTML = `
+        <div class="error">
+          <h2>❌ ${data.message}</h2>
+        </div>
+
+        <br>
+
+        <button onclick="scanAgain()">
+          Jaribu Tena
+        </button>
+      `;
+
+    }
+
+  } catch (error) {
+
+    console.error(error);
+
+    resultBox.innerHTML = `
+      <div class="error">
+        <h2>❌ Tatizo la server</h2>
+        <p>Imeshindikana kuwasiliana na mfumo.</p>
+      </div>
+
+      <br>
+
+      <button onclick="scanAgain()">
+        Jaribu Tena
+      </button>
+    `;
+
+  }
+
+}
+
+function scanAgain() {
+
+  location.reload();
+
+}
+
+function onScanSuccess(decodedText) {
+
+  checkAttendance(decodedText);
+
+}
+
+function onScanFailure(error) {
+
+  // QR haijasomwa bado — hakuna cha kufanya
+
+}
+
+const html5QrcodeScanner = new Html5QrcodeScanner(
+
+  "reader",
+
+  {
+    fps: 10,
+    qrbox: {
+      width: 250,
+      height: 250
+    }
+  },
+
+  false
+
+);
+
+html5QrcodeScanner.render(
+  onScanSuccess,
+  onScanFailure
+);
+
+</script>
+
+</body>
+</html>
