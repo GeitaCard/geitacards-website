@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Geita Cards - Tengeneza Kadi</title>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      background: #080808;
+      color: white;
+      font-family: Arial, sans-serif;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: auto;
+    }
+
+    h1 {
+      color: #f5c542;
+      text-align: center;
+    }
+
+    .box {
+      background: #151515;
+      padding: 20px;
+      border-radius: 15px;
+      margin-top: 20px;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      margin-bottom: 6px;
+    }
+
+    input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 13px;
+      border-radius: 8px;
+      border: 1px solid #444;
+      background: #222;
+      color: white;
+    }
+
+    button {
+      width: 100%;
+      margin-top: 20px;
+      padding: 14px;
+      border: none;
+      border-radius: 30px;
+      background: #f5c542;
+      font-weight: bold;
+      font-size: 16px;
+    }
+
+    #card {
+      display: none;
+      margin-top: 30px;
+      background: white;
+      color: #111;
+      padding: 25px;
+      border-radius: 15px;
+      text-align: center;
+    }
+
+    #qrcode {
+      margin: 20px auto;
+      width: 256px;
+      height: 256px;
+    }
+
+    .token {
+      font-size: 13px;
+      word-break: break-all;
+      color: #555;
+    }
+
+    .success {
+      color: #35b85a;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <h1>Geita Cards</h1>
+
+  <div class="box">
+
+    <h2>Tengeneza Kadi ya Mgeni</h2>
+
+    <label>Jina la Mgeni</label>
+    <input id="name" placeholder="Mfano: Twaha Swaibu">
+
+    <label>Namba ya Simu</label>
+    <input id="phone" placeholder="+255...">
+
+    <label>Tukio</label>
+    <input id="event" placeholder="Mfano: Harusi ya Twaha">
+
+    <button onclick="createGuest()">
+      Tengeneza Kadi + QR
+    </button>
+
+    <p id="message"></p>
+
+  </div>
+
+  <div id="card">
+
+    <h2>MWALIKO</h2>
+
+    <h1 id="guestName"></h1>
+
+    <p id="guestEvent"></p>
+
+    <p>Onesha QR hii mlangoni</p>
+
+    <div id="qrcode"></div>
+
+    <p class="token">
+      Token: <span id="guestToken"></span>
+    </p>
+
+  </div>
+
+</div>
+
+<script>
+
+async function createGuest() {
+
+  const name = document.getElementById("name").value.trim();
+  const phone = document.getElementById("phone").value.trim();
+  const event = document.getElementById("event").value.trim();
+
+  const message = document.getElementById("message");
+
+  if (!name) {
+    message.innerHTML =
+      "<span style='color:#ff5555'>Weka jina la mgeni.</span>";
+    return;
+  }
+
+  message.innerHTML = "⏳ Inatengeneza mgeni...";
+
+  try {
+
+    const response = await fetch("/api/guests", {
+
+      method: "POST",
+
+      headers: {
+        "Content-Type": "application/json"
+      },
+
+      body: JSON.stringify({
+        name,
+        phone,
+        event
+      })
+
+    });
+
+    const data = await response.json();
+
+    if (!data.success) {
+
+      message.innerHTML =
+        "<span style='color:#ff5555'>" +
+        data.message +
+        "</span>";
+
+      return;
+    }
+
+    const guest = data.guest;
+
+    document.getElementById("guestName").textContent =
+      guest.name;
+
+    document.getElementById("guestEvent").textContent =
+      guest.event;
+
+    document.getElementById("guestToken").textContent =
+      guest.token;
+
+    document.getElementById("qrcode").innerHTML = "";
+
+    new QRCode(
+      document.getElementById("qrcode"),
+      {
+        text: guest.token,
+        width: 256,
+        height: 256
+      }
+    );
+
+    document.getElementById("card").style.display =
+      "block";
+
+    message.innerHTML =
+      "<span class='success'>✅ Mgeni ameongezwa na QR imetengenezwa.</span>";
+
+  } catch (error) {
+
+    console.error(error);
+
+    message.innerHTML =
+      "<span style='color:#ff5555'>" +
+      "❌ Server error. Hakikisha Vercel ime-deploy." +
+      "</span>";
+  }
+
+}
+
+</script>
+
+</body>
+</html>
